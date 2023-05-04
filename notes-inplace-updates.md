@@ -1,0 +1,7 @@
+- keep go version update in Dockerfile
+- keep pkg changes as these are new changes wrt 0.27
+- remove chart changes in job template
+- remove devspace.yaml changes
+- remove kind config yaml
+- remove nginx yaml
+- remove vcluster-values yaml

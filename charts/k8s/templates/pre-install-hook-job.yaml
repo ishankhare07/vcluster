@@ -40,11 +40,12 @@ spec:
       {{- end }}
       containers:
         - name: certs
-          {{- if .Values.syncer.image }}
-          image: "{{ .Values.defaultImageRegistry }}{{ .Values.syncer.image }}"
-          {{- else }}
-          image: "{{ .Values.defaultImageRegistry }}ghcr.io/loft-sh/vcluster:{{ .Chart.Version }}"
-          {{- end }}
+          # {{- if .Values.syncer.image }}
+          # image: "{{ .Values.defaultImageRegistry }}{{ .Values.syncer.image }}"
+          # {{- else }}
+          # image: "{{ .Values.defaultImageRegistry }}ghcr.io/loft-sh/vcluster:{{ .Chart.Version }}"
+          # {{- end }}
+          image: ghcr.io/loft-sh/vcluster:0.15.0
           imagePullPolicy: IfNotPresent
           command:
             - /vcluster

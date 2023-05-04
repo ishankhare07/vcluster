@@ -30,7 +30,7 @@ const (
 func checkExistingAPIService(ctx context.Context, kubeAggClient *apiregclientv1.ApiregistrationV1Client) bool {
 	var exists bool
 
-	_ = applyOperation(ctx, func() (bool, error) {
+	_ = applyOperation(ctx, func(ctx context.Context) (bool, error) {
 		_, err := kubeAggClient.APIServices().Get(ctx, MetricsAPIService, v1.GetOptions{})
 		if err != nil {
 			if kerrors.IsNotFound(err) {
@@ -47,7 +47,7 @@ func checkExistingAPIService(ctx context.Context, kubeAggClient *apiregclientv1.
 	return exists
 }
 
-func applyOperation(ctx context.Context, operationFunc wait.ConditionFunc) error {
+func applyOperation(ctx context.Context, operationFunc wait.ConditionWithContextFunc) error {
 	return wait.ExponentialBackoffWithContext(ctx, wait.Backoff{
 		Duration: time.Second,
 		Factor:   1.5,
@@ -56,8 +56,8 @@ func applyOperation(ctx context.Context, operationFunc wait.ConditionFunc) error
 	}, operationFunc)
 }
 
-func deleteOperation(ctx context.Context, kubeAggClient *apiregclientv1.ApiregistrationV1Client) wait.ConditionFunc {
-	return func() (bool, error) {
+func deleteOperation(ctx context.Context, kubeAggClient *apiregclientv1.ApiregistrationV1Client) wait.ConditionWithContextFunc {
+	return func(ctx context.Context) (bool, error) {
 		err := kubeAggClient.APIServices().Delete(ctx, MetricsAPIService, v1.DeleteOptions{})
 		if err != nil {
 			if kerrors.IsNotFound(err) {
@@ -71,8 +71,8 @@ func deleteOperation(ctx context.Context, kubeAggClient *apiregclientv1.Apiregis
 	}
 }
 
-func createOperation(ctx context.Context, kubeAggClient *apiregclientv1.ApiregistrationV1Client, client client.Client) wait.ConditionFunc {
-	return func() (bool, error) {
+func createOperation(ctx context.Context, kubeAggClient *apiregclientv1.ApiregistrationV1Client, client client.Client) wait.ConditionWithContextFunc {
+	return func(ctx context.Context) (bool, error) {
 		spec := apiregistrationv1.APIServiceSpec{
 			Group:                metrics.GroupName,
 			GroupPriorityMinimum: 100,

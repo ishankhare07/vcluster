@@ -879,6 +879,16 @@ func getExcludedAnnotations(pPod *corev1.Pod) []string {
 func (t *translator) calcSpecDiff(pObj, vObj *corev1.Pod) *corev1.PodSpec {
 	var updatedPodSpec *corev1.PodSpec
 
+	// resource requirements different?
+	updatedContainerResourceRequirements, ok := resourceReqUpdated(pObj.Spec.Containers, vObj.Spec.Containers)
+	if ok {
+		if updatedPodSpec == nil {
+			updatedPodSpec = pObj.Spec.DeepCopy()
+		}
+
+		updatedPodSpec.Containers = updatedContainerResourceRequirements
+	}
+
 	// active deadlines different?
 	val, equal := isInt64Different(pObj.Spec.ActiveDeadlineSeconds, vObj.Spec.ActiveDeadlineSeconds)
 	if !equal {
@@ -958,4 +968,14 @@ func isInt64Different(i1, i2 *int64) (*int64, bool) {
 	}
 
 	return updated, false
+}
+
+func resourceReqUpdated(pObj, vObj []corev1.Container) ([]corev1.Container, bool) {
+	for i, _ := range pObj {
+		if !equality.Semantic.DeepEqual(pObj[i].Resources, vObj[i].Resources) {
+			return pObj, true
+		}
+	}
+
+	return nil, false
 }
